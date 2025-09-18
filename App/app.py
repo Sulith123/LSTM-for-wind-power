@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # ------------- Load data -------------
-df = pd.read_excel("E:/WindPowerForecastingData.xlsx")
+df = pd.read_excel("../WindPowerForecastingData.xlsx")
 if 'TIMESTAMP' in df.columns:
     # Adjust format if your timestamps are in a different format
     try:
@@ -52,9 +52,9 @@ def show_stats_all(column):
 def get_forecast_file(model_name):
     """Map model selector to file path."""
     if model_name == "BiLSTM":
-        return "Predictions/forecast_results_bilstm.csv"
+        return "../Predictions/forecast_results_bilstm.csv"
     elif model_name == "BiGLSTM":
-        return "Predictions/forecast_results_biglstm.csv"
+        return "../Predictions/forecast_results_biglstm.csv"
     else:
         return None
 
