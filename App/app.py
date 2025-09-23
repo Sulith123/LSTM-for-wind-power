@@ -64,7 +64,7 @@ def plot_data(x_col, y_col, plot_type):
 
 def get_forecast_file(model_name):
     if model_name == "BiLSTM":
-        return "../data_logs/forecast_results_biglstm.csv"
+        return "../data_logs/forecast_results_bilstm.csv"
     elif model_name == "BiGLSTM":
         return "../data_logs/forecast_results_biglstm.csv"
     else:
@@ -288,7 +288,7 @@ def parse_features_table(file_path: str, sheet_name=0) -> pd.DataFrame:
 # =============================================================================
 # ------------- Storage config & file save -------------
 # =============================================================================
-SAVE_DIR = Path(r"../LSTM_Wind_assignment/data_logs")
+SAVE_DIR = Path(r"../data_logs")
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 def save_input_dataframe_with_timestamp(df_in: pd.DataFrame) -> Path:
@@ -369,8 +369,35 @@ def _extract_safe_module_code_from_notebook(notebook_path: Path) -> str:
         safe_code = "pass"
     return safe_code
 
+def _inject_defaults(mod):
+    # Put any “missing” globals your notebook’s test_function might expect
+    try:
+        import torch
+        _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    except Exception:
+        _device = "cpu"
+
+    defaults = {
+        "TIME_COL":   "TIMESTAMP",
+        "TARGET_COL": "TARGETVAR",
+        "BASE_FEATS": ["U10", "V10", "U100", "V100"],
+        "LAGS_Y":     [1, 3, 6, 12, 24],
+        "LAGS_SPEED": [1, 3, 6],
+        "ROLLS_Y":    [6, 12, 24],
+        "TURB_WINS":  [6, 12, 24, 48],
+        "TRAIN_RATIO": 0.70,
+        "VAL_RATIO":   0.15,
+        "DEVICE": _device,
+        "DATA_LOGS_DIR": Path("../data_logs"),
+        "INPUT_DATA_PATH": Path("../data_logs/input_data.csv"),
+        "INPUT_FEATURES_PATH": Path("../data_logs/input_features.csv"),
+        "INPUTS_PATH": Path("../data_logs/inputs.csv"),
+    }
+    for k, v in defaults.items():
+        mod.__dict__.setdefault(k, v)  # only set if missing
+
 def load_test_function(model_name: str):
-    base_folder = Path(r"..\Predictions")
+    base_folder = Path(r"../Predictions")
     if model_name == "BiLSTM":
         notebook_path = base_folder / "biLSTM_pred.ipynb"
     elif model_name == "BiGLSTM":
@@ -382,14 +409,20 @@ def load_test_function(model_name: str):
         raise FileNotFoundError(f"Notebook not found: {notebook_path}")
 
     safe_code = _extract_safe_module_code_from_notebook(notebook_path)
+
     mod = types.ModuleType(f"_safe_nb_{notebook_path.stem}")
-    exec(safe_code, mod.__dict__)
+    exec(safe_code, mod.__dict__)          # <-- we execute the notebook’s safe code into mod
+
+    _inject_defaults(mod)                  # <-- RIGHT AFTER exec: add missing globals into mod
+
     if not hasattr(mod, "test_function"):
         raise AttributeError(
             f"'test_function' not found in {notebook_path.name}. "
             "Make sure the notebook defines a function named test_function(...)."
         )
     return getattr(mod, "test_function")
+
+
 
 # Single, canonical predict handler used by the UI
 def predict_handler(model_name: str) -> str:
