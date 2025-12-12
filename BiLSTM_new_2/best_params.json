@@ -1,0 +1,12 @@
+{
+  "lookback": 36,
+  "hidden": 256,
+  "layers": 2,
+  "dropout": 0.46660784727007587,
+  "bidir": true,
+  "batch": 64,
+  "lr": 0.002907988589090622,
+  "wd": 6.323457496905725e-05,
+  "clip": 1.0,
+  "log_target": false
+}
