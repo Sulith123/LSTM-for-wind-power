@@ -1,0 +1,13 @@
+{
+  "lookback": 24,
+  "hidden": 128,
+  "layers": 2,
+  "dropout": 0.2,
+  "batch": 32,
+  "bidir": false,
+  "lr": 0.001,
+  "wd": 1e-06,
+  "clip": 0.5,
+  "log_target": true,
+  "turb_on": false
+}

@@ -12,9 +12,8 @@ import nbformat
 import ast
 import types
 
-# =============================================================================
-# ------------- Load base dataset for the other tabs -------------
-# =============================================================================
+
+# Load base dataset for the other tabs 
 BASE_PATH = "../WindPowerForecastingData.xlsx"
 if os.path.exists(BASE_PATH):
     df = pd.read_excel(BASE_PATH)
@@ -32,9 +31,9 @@ if "TIMESTAMP" in df.columns:
         except Exception:
             pass
 
-# =============================================================================
-# ------------- Helper functions (Overview / Viz / Stats / Forecast) -------------
-# =============================================================================
+
+#Helper functions (Overview / Viz / Stats / Forecast)
+
 def data_overview():
     shape_info = f"Data Shape: {df.shape[0]} rows, {df.shape[1]} columns"
     time_info = ""
@@ -134,9 +133,9 @@ def plot_forecast_model(model_name):
     fig = plot_forecast(filename, plot_len=2500)
     return metrics_df, fig
 
-# =============================================================================
-# ------------- Strict-but-friendly file validation for Generation Prediction -------------
-# =============================================================================
+
+#Strict-but-friendly file validation for Generation Prediction
+
 def _normalize(colname: str) -> str:
     s = str(colname).lower().strip()
     return "".join(ch for ch in s if ch.isalnum())
@@ -234,7 +233,7 @@ def parse_wind_input_table(file_path: str, sheet_name=0) -> pd.DataFrame:
     out = out[["TIMESTAMP", "TARGETVAR", "U10", "V10", "U100", "V100"]]
     return out
 
-# ---------- NEW: parser for features-only file (U10, V10, U100, V100) ----------
+#  NEW: parser for features-only file (U10, V10, U100, V100) 
 def parse_features_table(file_path: str, sheet_name=0) -> pd.DataFrame:
     """
     Accepts ONLY: U10, V10, U100, V100 (numeric). Extra columns are ignored.
@@ -285,9 +284,8 @@ def parse_features_table(file_path: str, sheet_name=0) -> pd.DataFrame:
     out = out[["U10", "V10", "U100", "V100"]]
     return out
 
-# =============================================================================
-# ------------- Storage config & file save -------------
-# =============================================================================
+#  Storage config & file save 
+
 SAVE_DIR = Path(r"../data_logs")
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -303,7 +301,7 @@ def save_input_dataframe_with_timestamp(df_in: pd.DataFrame) -> Path:
     out.to_csv(dest, index=False)
     return dest
 
-# ---------- NEW: saver for features-only file ----------
+# saver for features-only file 
 def save_features_dataframe(df_feat: pd.DataFrame) -> Path:
     """
     Save the features-only data to input_features.csv (U10, V10, U100, V100).
@@ -321,9 +319,8 @@ def save_inputs(model_name: str, pred_datetime: str) -> Path:
     df_row.to_csv(dest, index=False)  # overwrite
     return dest
 
-# =============================================================================
-# ------------- Helpers: validate 'YYYY/MM/DD HH.MM' -------------
-# =============================================================================
+#  Helpers: validate 'YYYY/MM/DD HH.MM' 
+
 def _validate_and_extract_hour(dt_str: str) -> float:
     if dt_str is None or str(dt_str).strip() == "":
         raise ValueError("Please enter a prediction date & time in the format YYYY/MM/DD HH.MM (e.g., 2012/01/01 05.00).")
@@ -345,9 +342,8 @@ def _validate_and_extract_hour(dt_str: str) -> float:
         raise ValueError("Minutes must be '00' (hourly steps only).")
     return float(h)
 
-# =============================================================================
-# ------------- Dynamic loader for notebook modules (SAFE: only defs) -------------
-# =============================================================================
+
+# Dynamic loader for notebook modules (SAFE: only defs)
 
 def _extract_safe_module_code_from_notebook(notebook_path: Path) -> str:
     nb_node = nbformat.read(str(notebook_path), as_version=4)
@@ -430,9 +426,8 @@ def predict_handler(model_name: str) -> str:
     y_pred = test_fn()  # your notebook's test_function should read the saved CSVs if needed
     return str(y_pred)
 
-# =============================================================================
-# ------------- Submit handler for Generation Prediction -------------
-# =============================================================================
+#  Submit handler for Generation Prediction 
+
 def submit_upload(file_main, file_features, model_name, pred_dt_str):
     # Validate model
     if model_name not in ("BiLSTM", "BiGLSTM"):
@@ -476,9 +471,9 @@ def submit_upload(file_main, file_features, model_name, pred_dt_str):
     except Exception as e:
         return f"Prediction error: {e}"
 
-# =============================================================================
-# ------------- Gradio UI -------------
-# =============================================================================
+
+# Gradio UI
+
 with gr.Blocks() as demo:
     gr.Markdown('<p style="font-size: 2.0em; font-weight: bold;">🌬 Wind Power Forecasting Data Analysis</p>')
 
